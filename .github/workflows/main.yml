@@ -20,12 +20,13 @@ jobs:
         id: get-token
         run: >
           TOKEN_RESPONSE=$(curl -X POST \
+            -H "accept: application/json" \
             -H "Content-Type: application/json" \
             -d '{
               "client_id": "${{ secrets.LRC_CLIENT_ID }}",
               "client_secret": "${{ secrets.LRC_SECRET_KEY }}"
             }' \
-            https://loadrunner-cloud.saas.microfocus.com/v1/auth/login)
+            https://loadrunner-cloud.saas.microfocus.com/v1/auth-client?TENANTID=688577294)
           echo "token=$(echo $TOKEN_RESPONSE | jq -r '.token')" >>
           $GITHUB_OUTPUT
           echo "Generated Token: $(echo $TOKEN_RESPONSE | jq -r '.token')"
