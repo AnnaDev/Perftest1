@@ -12,23 +12,37 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+      - name: Get LoadRunner Cloud Token
+        id: get-token
+        run: >
+          TOKEN_RESPONSE=$(curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "client_id": "${{ secrets.LRC_CLIENT_ID }}",
+              "client_secret": "${{ secrets.LRC_SECRET_KEY }}"
+            }' \
+            https://loadrunner-cloud.saas.microfocus.com/v1/auth/login)
+          echo "token=$(echo $TOKEN_RESPONSE | jq -r '.token')" >>
+          $GITHUB_OUTPUT
       - name: Trigger LoadRunner Cloud Test
         env:
-          LRC_CLIENT_ID: '${{ secrets.LRC_CLIENT_ID }}'
-          LRC_SECRET_KEY: '${{ secrets.LRC_SECRET_KEY }}'
           LRC_PROJECT_ID: '${{ secrets.LRC_PROJECT_ID }}'
           LRC_TEST_ID: '${{ secrets.LRC_TEST_ID }}'
-        run: |
+        run: >
           curl -X POST \
+
           -H "Content-Type: application/json" \
+
+          -H "Authorization: Bearer ${{ steps.get-token.outputs.token }}" \
+
           -d '{
-                "clientId": "'$LRC_CLIENT_ID'",
-                "clientSecret": "'$LRC_SECRET_KEY'",
-                "testId": "'$LRC_TEST_ID'",
-                "executionSettings": {
-                  "duration": 30,
-                  "loadProfile": "default"
-                }
-              }' \
-          https://loadrunner-cloud.saas.microfocus.com/loadTests/123/scripts/?TENANTID=688577294&projectId=1
+            "projectId": "'$LRC_PROJECT_ID'",
+            "testId": "'$LRC_TEST_ID'",
+            "executionSettings": {
+              "duration": 30,
+              "vusers": 10,
+              "loadProfile": "default"
+            }
+          }' \
+
+          "https://loadrunner-cloud.saas.microfocus.com/v1/projects/$LRC_PROJECT_ID/tests/$LRC_TEST_ID/runs"
