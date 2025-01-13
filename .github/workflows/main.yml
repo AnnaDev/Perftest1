@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Run test in LoadRunner Cloud
         uses: AnnaDev/Perftest1@v1.0.11
-        id: lrc_run_test
+
+      - name: Trigger LoadRunner Cloud Test
         env:
           LRC_CLIENT_ID: '${{ secrets.LRC_CLIENT_ID }}'
           LRC_SECRET_KEY: '${{ secrets.LRC_SECRET_KEY }}'
