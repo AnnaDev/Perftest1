@@ -1,0 +1,37 @@
+name: Trigger LoadRunner Cloud Test
+
+on:
+  push:
+    branches:
+      - main  # Trigger when code is pushed to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests to the main branch
+
+jobs:
+  trigger-lrc-test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/Perftest1@v1
+
+      - name: Trigger LoadRunner Cloud Test
+        env:
+          LRC_CLIENT_ID: ${{ secrets.LRC_CLIENT_ID }}   # LoadRunner Cloud Client ID
+          LRC_SECRET_KEY: ${{ secrets.LRC_SECRET_KEY }} # LoadRunner Cloud Secret Key
+          LRC_PROJECT_ID: ${{ secrets.LRC_PROJECT_ID }} # LoadRunner Cloud Project ID
+          LRC_TEST_ID: ${{ secrets.LRC_TEST_ID }}       # LoadRunner Cloud Test ID
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{
+                "clientId": "'$LRC_CLIENT_ID'",
+                "clientSecret": "'$LRC_SECRET_KEY'",
+                "testId": "'$LRC_TEST_ID'",
+                "executionSettings": {
+                  "duration": 30,
+                  "loadProfile": "default"
+                }
+              }' \
+          https://loadrunner-cloud.saas.microfocus.com/loadTests/123/scripts/?TENANTID=688577294&projectId=1
