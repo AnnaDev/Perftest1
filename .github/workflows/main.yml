@@ -9,11 +9,10 @@ name: Trigger LoadRunner Cloud Test
 jobs:
   trigger-lrc-test:
     runs-on: ubuntu-latest
-    name: Start a load test
     steps:
-      - name: Run test in LoadRunner Cloud
-        uses: AnnaDev/Perftest1@v1.0.11
-
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
       - name: Trigger LoadRunner Cloud Test
         env:
           LRC_CLIENT_ID: '${{ secrets.LRC_CLIENT_ID }}'
