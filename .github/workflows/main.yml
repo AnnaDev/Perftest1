@@ -8,7 +8,7 @@ name: Trigger LoadRunner Cloud Test
       - main
 jobs:
   trigger-lrc-test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     name: Start a load test
     steps:
       - name: Run test in LoadRunner Cloud
