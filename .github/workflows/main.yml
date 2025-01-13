@@ -1,4 +1,4 @@
-name: Trigger LoadRunner Cloud Test
+name: Build and Run LoadRunner Cloud Test
 'on':
   push:
     branches:
@@ -7,11 +7,15 @@ name: Trigger LoadRunner Cloud Test
     branches:
       - main
 jobs:
-  trigger-lrc-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+  load-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Get LoadRunner Cloud Token
         id: get-token
         run: >
@@ -24,6 +28,7 @@ jobs:
             https://loadrunner-cloud.saas.microfocus.com/v1/auth/login)
           echo "token=$(echo $TOKEN_RESPONSE | jq -r '.token')" >>
           $GITHUB_OUTPUT
+          echo "Generated Token: $(echo $TOKEN_RESPONSE | jq -r '.token')"
       - name: Trigger LoadRunner Cloud Test
         env:
           LRC_PROJECT_ID: '${{ secrets.LRC_PROJECT_ID }}'
@@ -39,10 +44,18 @@ jobs:
             "projectId": "'$LRC_PROJECT_ID'",
             "testId": "'$LRC_TEST_ID'",
             "executionSettings": {
-              "duration": 30,
-              "vusers": 10,
+              "duration": 10,
+              "vusers": 5,
               "loadProfile": "default"
             }
           }' \
 
           "https://loadrunner-cloud.saas.microfocus.com/v1/projects/$LRC_PROJECT_ID/tests/$LRC_TEST_ID/runs"
+      - name: Wait for test completion and check results
+        env:
+          LRC_PROJECT_ID: '${{ secrets.LRC_PROJECT_ID }}'
+        run: |
+          echo "Waiting for test to complete..."
+          sleep 60  # Initial wait time
+          # You can add additional logic here to poll the test status
+          # and check the results using the LoadRunner Cloud API
