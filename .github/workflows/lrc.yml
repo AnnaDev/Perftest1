@@ -1,0 +1,44 @@
+name: Trigger LoadRunner Cloud Load Test
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push events to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests targeting the main branch
+
+jobs:
+  trigger-lrc-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Trigger LoadRunner Cloud Test
+        env:
+          LRC_CLIENT_ID: ${{ secrets.LRC_CLIENT_ID }}   # LoadRunner Cloud Client ID
+          LRC_SECRET_KEY: ${{ secrets.LRC_SECRET_KEY }} # LoadRunner Cloud Secret Key
+          LRC_PROJECT_ID: ${{ secrets.LRC_PROJECT_ID }} # LoadRunner Cloud Project ID
+          LRC_TEST_ID: ${{ secrets.LRC_TEST_ID }}       # LoadRunner Cloud Test Scenario ID
+        run: |
+          echo "Authenticating with LoadRunner Cloud"
+          AUTH_RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "clientId": "'$LRC_CLIENT_ID'",
+                  "clientSecret": "'$LRC_SECRET_KEY'"
+                }' \
+            https://loadrunner-cloud.saas.microfocus.com/v1/auth)
+
+          TOKEN=$(echo $AUTH_RESPONSE | jq -r '.access_token')
+
+          echo "Starting LoadRunner Cloud Test"
+          curl -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "testId": "'$LRC_TEST_ID'"
+                }' \
+            https://loadrunner-cloud.saas.microfocus.com/v1/projects/$LRC_PROJECT_ID/runs
