@@ -19,8 +19,16 @@ jobs:
           LRC_SECRET_KEY: '${{ secrets.LRC_SECRET_KEY }}'
           LRC_PROJECT_ID: '${{ secrets.LRC_PROJECT_ID }}'
           LRC_TEST_ID: '${{ secrets.LRC_TEST_ID }}'
-        with:
-          lrc_server: 'https://loadrunner-cloud.saas.microfocus.com'
-          lrc_tenant: '688577294'
-          lrc_project: '1'
-          lrc_test_id: '123'
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{
+                "clientId": "'$LRC_CLIENT_ID'",
+                "clientSecret": "'$LRC_SECRET_KEY'",
+                "testId": "'$LRC_TEST_ID'",
+                "executionSettings": {
+                  "duration": 30,
+                  "loadProfile": "default"
+                }
+              }' \
+          https://loadrunner-cloud.saas.microfocus.com/loadTests/123/scripts/?TENANTID=688577294&projectId=1
